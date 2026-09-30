@@ -8,6 +8,7 @@ const saveAuth = (a: any) => {
   localStorage.setItem('ed_token', a.token);
   localStorage.setItem('ed_user', JSON.stringify(a.user));
   localStorage.setItem('ed_shop', a.tenant.name);
+  localStorage.setItem('ed_type', a.tenant.shopType);
 };
 
 export default function Login() {
@@ -20,7 +21,7 @@ export default function Login() {
   const go = async () => {
     setBusy(true); setErr('');
     try {
-      const d = await gql(`mutation($p:String!,$w:String!){ login(phone:$p,password:$w){ token user{id name role} tenant{name} } }`, { p: phone, w: password });
+      const d = await gql(`mutation($p:String!,$w:String!){ login(phone:$p,password:$w){ token user{id name role} tenant{name shopType} } }`, { p: phone, w: password });
       saveAuth(d.login);
       router.replace(d.login.user.role === 'EMPLOYEE' ? '/sale' : '/');
     } catch (e: any) { setErr(e.message); }

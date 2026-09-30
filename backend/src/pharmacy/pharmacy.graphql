@@ -1,0 +1,92 @@
+type ExpiryBatch {
+  id: ID!
+  productName: String!
+  batchNo: String
+  expiry: DateTime
+  qty: Float!
+  expired: Boolean!
+  piecesPerStrip: Int!
+  stripsPerBox: Int!
+}
+
+type TrendDay {
+  date: String!
+  sale: Float!
+  due: Float!
+  expense: Float!
+  profit: Float!
+}
+
+type TopMedicine {
+  productId: ID!
+  name: String!
+  pieces: Float!
+  revenue: Float!
+  piecesPerStrip: Int!
+  stripsPerBox: Int!
+}
+
+input MedicineInput {
+  name: String!
+  genericName: String
+  company: String
+  form: String
+  barcode: String
+  piecesPerStrip: Int
+  stripsPerBox: Int
+  priceUnit: String
+  sellPrice: Float
+  buyPrice: Float
+  minQty: Float
+  openBoxes: Float
+  openStrips: Float
+  openPieces: Float
+  openExpiry: String
+  openBatchNo: String
+}
+
+input PharmaSaleItemInput {
+  productId: ID!
+  unit: String!
+  qty: Float!
+  price: Float
+}
+
+input PharmaSaleInput {
+  items: [PharmaSaleItemInput!]!
+  cashAmount: Float
+  bkashAmount: Float
+  dueAmount: Float
+  customerId: ID
+  note: String
+}
+
+input PharmaPurchaseItemInput {
+  productId: ID!
+  unit: String!
+  qty: Float!
+  cost: Float!
+  batchNo: String
+  expiry: String
+}
+
+input PharmaPurchaseInput {
+  supplierId: ID
+  items: [PharmaPurchaseItemInput!]!
+  paid: Float
+}
+
+type Query {
+  salesTrend(days: Int!): [TrendDay!]!
+  lowStockMedicines: [Product!]!
+  expiringBatches(days: Int!): [ExpiryBatch!]!
+  topSelling(days: Int!): [TopMedicine!]!
+}
+
+type Mutation {
+  saveMedicine(id: ID, input: MedicineInput!): Product!
+  pharmacySale(input: PharmaSaleInput!): Sale!
+  pharmacyPurchase(input: PharmaPurchaseInput!): Purchase!
+  lendToSupplier(supplierId: ID!, amount: Float!, method: String): Supplier!
+  discardBatch(batchId: ID!): Boolean!
+}

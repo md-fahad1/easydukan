@@ -49,6 +49,12 @@ type Product {
   sellingPrice: Float!
   stock: Float!
   minStock: Float!
+  barcode: String
+  genericName: String
+  company: String
+  form: String!
+  piecesPerStrip: Int!
+  stripsPerBox: Int!
 }
 
 type SaleItem {

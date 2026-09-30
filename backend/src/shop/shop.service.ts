@@ -40,7 +40,7 @@ export class ShopService {
       this.db.product.findMany({ where: { tenantId: t, minStock: { gt: 0 } }, select: { stock: true, minStock: true } }),
     ]);
     const received = n(pays.find((p) => p.type === 'CUSTOMER_RECEIVE')?._sum.amount);
-    const paidSupplier = n(pays.find((p) => p.type === 'SUPPLIER_PAY')?._sum.amount);
+    const paidSupplier = sum(pays.filter((p) => p.type === 'SUPPLIER_PAY' || p.type === 'SUPPLIER_LEND').map((p) => n(p._sum.amount)));
     const totalSale = n(s._sum.total), cash = n(s._sum.cashAmount), bkash = n(s._sum.bkashAmount);
     const expense = n(e._sum.amount);
     return {

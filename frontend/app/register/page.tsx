@@ -26,10 +26,11 @@ export default function Register() {
     if (f.password.length < 6) return setErr('পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের দিন');
     setBusy(true); setErr('');
     try {
-      const d = await gql(`mutation($i:RegisterInput!){ register(input:$i){ token user{id name role} tenant{name} } }`, { i: f });
+      const d = await gql(`mutation($i:RegisterInput!){ register(input:$i){ token user{id name role} tenant{name shopType} } }`, { i: f });
       localStorage.setItem('ed_token', d.register.token);
       localStorage.setItem('ed_user', JSON.stringify(d.register.user));
       localStorage.setItem('ed_shop', d.register.tenant.name);
+      localStorage.setItem('ed_type', d.register.tenant.shopType);
       router.replace('/');
     } catch (e: any) { setErr(e.message); }
     setBusy(false);
