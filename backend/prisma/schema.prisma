@@ -105,6 +105,7 @@ model Sale {
   createdAt   DateTime   @default(now())
   customer    Customer?  @relation(fields: [customerId], references: [id])
   items       SaleItem[]
+  returns     SaleReturn[]
 
   @@index([tenantId, createdAt])
 }
@@ -191,6 +192,7 @@ model ProductBatch {
   tenantId  String
   productId String
   batchNo   String?
+  purchaseId String?
   expiry    DateTime?
   qty       Float
   cost      Float     @default(0)
@@ -198,5 +200,42 @@ model ProductBatch {
   product   Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@index([tenantId, expiry])
+  @@index([purchaseId])
   @@index([productId])
+}
+
+model SaleReturn {
+  id           String           @id @default(uuid())
+  tenantId     String
+  saleId       String
+  total        Float
+  cost         Float            @default(0)
+  dueAdjusted  Float            @default(0)
+  refund       Float            @default(0)
+  refundMethod String           @default("CASH")
+  note         String?
+  createdBy    String?
+  createdAt    DateTime         @default(now())
+  sale         Sale             @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  items        SaleReturnItem[]
+
+  @@index([tenantId, createdAt])
+  @@index([saleId])
+}
+
+model SaleReturnItem {
+  id         String     @id @default(uuid())
+  returnId   String
+  saleItemId String
+  productId  String?
+  name       String
+  unit       String?
+  qty        Float
+  pieces     Float      @default(0)
+  price      Float
+  cost       Float      @default(0)
+  saleReturn SaleReturn @relation(fields: [returnId], references: [id], onDelete: Cascade)
+
+  @@index([saleItemId])
+  @@index([returnId])
 }

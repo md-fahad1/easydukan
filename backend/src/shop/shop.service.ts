@@ -23,7 +23,33 @@ export class ShopService {
   }
 
   // ---------- আজকের হিসাব / রিপোর্ট ----------
+  // রিপোর্টে ফেরত (Sales return) হিসাব করে নেট বিক্রি দেখায়
   async summary(t: string, period: string) {
+    const base = await this.baseSummary(t, period);
+    const { from, to } = range(period);
+    const rets = await this.db.saleReturn.groupBy({
+      by: ['refundMethod'],
+      where: { tenantId: t, createdAt: { gte: from, lt: to } },
+      _sum: { total: true, cost: true, dueAdjusted: true, refund: true },
+    });
+    const rTotal = sum(rets.map((r) => n(r._sum.total)));
+    const rCost = sum(rets.map((r) => n(r._sum.cost)));
+    const rDue = sum(rets.map((r) => n(r._sum.dueAdjusted)));
+    const rCash = sum(rets.filter((r) => r.refundMethod !== 'BKASH').map((r) => n(r._sum.refund)));
+    const rBkash = sum(rets.filter((r) => r.refundMethod === 'BKASH').map((r) => n(r._sum.refund)));
+    return {
+      ...base,
+      totalSale: base.totalSale - rTotal,
+      cash: base.cash - rCash,
+      bkash: base.bkash - rBkash,
+      due: base.due - rDue,
+      profit: base.profit - rTotal + rCost,
+      cashInHand: base.cashInHand - rCash - rBkash,
+      returnTotal: rTotal,
+    };
+  }
+
+  private async baseSummary(t: string, period: string) {
     const { from, to } = range(period);
     const where = { tenantId: t, createdAt: { gte: from, lt: to } };
     const [s, e, pays, pu, cust, sup, prods] = await Promise.all([

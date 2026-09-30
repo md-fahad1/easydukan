@@ -1,0 +1,64 @@
+type ReturnableItem {
+  id: ID!
+  productId: ID
+  name: String!
+  unit: String
+  qty: Float!
+  returnedQty: Float!
+  price: Float!
+}
+
+type ReturnableSale {
+  id: ID!
+  total: Float!
+  dueAmount: Float!
+  dueLeft: Float!
+  createdAt: DateTime!
+  customerName: String
+  returnedTotal: Float!
+  items: [ReturnableItem!]!
+}
+
+type ReturnLineInfo {
+  name: String!
+  unit: String
+  qty: Float!
+}
+
+type SaleReturnInfo {
+  id: ID!
+  saleId: ID!
+  total: Float!
+  refund: Float!
+  dueAdjusted: Float!
+  refundMethod: String!
+  note: String
+  createdAt: DateTime!
+  customerName: String
+  items: [ReturnLineInfo!]!
+}
+
+input ReturnItemInput {
+  saleItemId: ID!
+  qty: Float!
+}
+
+input SaleReturnInput {
+  saleId: ID!
+  items: [ReturnItemInput!]!
+  refundMethod: String
+  note: String
+}
+
+type Summary {
+  returnTotal: Float!
+}
+
+type Query {
+  returnableSales(days: Int!): [ReturnableSale!]!
+  saleReturns(days: Int!): [SaleReturnInfo!]!
+}
+
+type Mutation {
+  createSaleReturn(input: SaleReturnInput!): SaleReturnInfo!
+}

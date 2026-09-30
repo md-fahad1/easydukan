@@ -1,0 +1,27 @@
+type StockBatch {
+  id: ID!
+  batchNo: String
+  expiry: DateTime
+  qty: Float!
+  cost: Float!
+  receivedAt: DateTime!
+}
+
+type MedicineStock {
+  id: ID!
+  name: String!
+  genericName: String
+  company: String
+  form: String!
+  piecesPerStrip: Int!
+  stripsPerBox: Int!
+  stock: Float!
+  minStock: Float!
+  purchasePrice: Float!
+  sellingPrice: Float!
+  batches: [StockBatch!]!
+}
+
+type Query {
+  batchStock: [MedicineStock!]!
+}

@@ -1,0 +1,58 @@
+type EditableSaleItem {
+  id: ID!
+  productId: ID
+  name: String!
+  unit: String
+  qty: Float!
+  price: Float!
+}
+
+type EditableSale {
+  id: ID!
+  total: Float!
+  cashAmount: Float!
+  bkashAmount: Float!
+  dueAmount: Float!
+  note: String
+  createdAt: DateTime!
+  customerId: ID
+  customerName: String
+  hasReturn: Boolean!
+  items: [EditableSaleItem!]!
+}
+
+type EditablePurchaseItem {
+  id: ID!
+  productId: ID
+  name: String!
+  unit: String
+  qty: Float!
+  cost: Float!
+  batchNo: String
+  expiry: String
+}
+
+type EditablePurchase {
+  id: ID!
+  total: Float!
+  paid: Float!
+  due: Float!
+  createdAt: DateTime!
+  supplierId: ID
+  supplierName: String
+  items: [EditablePurchaseItem!]!
+}
+
+type Query {
+  manageSales(days: Int!): [EditableSale!]!
+  managePurchases(days: Int!): [EditablePurchase!]!
+}
+
+type Mutation {
+  deleteSale(id: ID!): Boolean!
+  deletePurchase(id: ID!): Boolean!
+  editSale(id: ID!, input: SaleInput!): Sale!
+  editPharmacySale(id: ID!, input: PharmaSaleInput!): Sale!
+  editPurchase(id: ID!, input: PurchaseInput!): Purchase!
+  editPharmacyPurchase(id: ID!, input: PharmaPurchaseInput!): Purchase!
+}

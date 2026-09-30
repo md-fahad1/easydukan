@@ -177,7 +177,7 @@ export class PharmacyService {
       });
       for (const l of lines) {
         await tx.product.update({ where: { id: l.productId }, data: { stock: { increment: l.pieces }, purchasePrice: l.perPiece } });
-        await tx.productBatch.create({ data: { tenantId: t, productId: l.productId, batchNo: l.batchNo, expiry: l.expiry, qty: l.pieces, cost: l.perPiece } });
+        await tx.productBatch.create({ data: { tenantId: t, productId: l.productId, batchNo: l.batchNo, expiry: l.expiry, qty: l.pieces, cost: l.perPiece, purchaseId: pu.id } });
       }
       if (due > 0) await tx.supplier.update({ where: { id: i.supplierId }, data: { balance: { increment: due } } });
       return pu;
@@ -207,7 +207,27 @@ export class PharmacyService {
   }
 
   // ---------- রিপোর্ট ----------
+  // ট্রেন্ডে ফেরত বাদ দিয়ে নেট বিক্রি ও লাভ দেখায়
   async trend(t: string, days: number) {
+    const base = await this.baseTrend(t, days);
+    const from = new Date(range('TODAY').from.getTime() - (base.length - 1) * DAY);
+    const rets = await this.db.saleReturn.findMany({
+      where: { tenantId: t, createdAt: { gte: from } },
+      select: { total: true, cost: true, dueAdjusted: true, createdAt: true },
+    });
+    const byDay: Record<string, any> = {};
+    for (const r of rets) {
+      const d = dhakaDay(r.createdAt);
+      const m = (byDay[d] ||= { total: 0, cost: 0, due: 0 });
+      m.total += r.total; m.cost += r.cost; m.due += r.dueAdjusted;
+    }
+    return base.map((d: any) => {
+      const r = byDay[d.date];
+      return r ? { ...d, sale: d.sale - r.total, due: d.due - r.due, profit: d.profit - r.total + r.cost } : d;
+    });
+  }
+
+  private async baseTrend(t: string, days: number) {
     days = Math.min(Math.max(Math.floor(days) || 7, 1), 90);
     const from = new Date(range('TODAY').from.getTime() - (days - 1) * DAY);
     const where = { tenantId: t, createdAt: { gte: from } };

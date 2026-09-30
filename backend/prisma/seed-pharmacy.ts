@@ -114,7 +114,7 @@ async function main() {
     const total = lines.reduce((a, l) => a + l.x.qty * l.x.cost, 0);
     const paid = o.paid == null ? total : o.paid;
     const due = total - paid;
-    await db.purchase.create({
+    const pu = await db.purchase.create({
       data: {
         tenantId: t, supplierId: o.supplier, total, paid, due, createdAt: o.when,
         items: { create: lines.map((l) => ({ productId: l.p.id, name: l.p.name, qty: l.x.qty, cost: l.x.cost, unit: l.x.unit, pieces: l.pieces })) },
@@ -123,7 +123,7 @@ async function main() {
     for (const l of lines) {
       await db.product.update({ where: { id: l.p.id }, data: { stock: { increment: l.pieces }, purchasePrice: l.perPiece } });
       await db.productBatch.create({
-        data: { tenantId: t, productId: l.p.id, batchNo: l.x.batch, expiry: exp(l.x.expiryDays), qty: l.pieces, cost: l.perPiece, createdAt: o.when },
+        data: { tenantId: t, productId: l.p.id, batchNo: l.x.batch, expiry: exp(l.x.expiryDays), qty: l.pieces, cost: l.perPiece, createdAt: o.when, purchaseId: pu.id },
       });
     }
     if (due > 0) await db.supplier.update({ where: { id: o.supplier }, data: { balance: { increment: due } } });

@@ -1,3 +1,4 @@
+import { EditsModule } from './edits/edits.module';
 import { Module } from '@nestjs/common';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
@@ -6,6 +7,8 @@ import { PrismaModule } from './prisma.service';
 import { AuthModule } from './auth/auth.module';
 import { ShopModule } from './shop/shop.module';
 import { PharmacyModule } from './pharmacy/pharmacy.module';
+import { ReturnsModule } from './returns/returns.module';
+import { StockModule } from './stock/stock.module';
 
 @Module({
   imports: [
@@ -18,6 +21,9 @@ import { PharmacyModule } from './pharmacy/pharmacy.module';
     AuthModule,
     ShopModule,
     PharmacyModule,
+    ReturnsModule,
+    EditsModule,
+    StockModule,
   ],
 })
 export class AppModule {}

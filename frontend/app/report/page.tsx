@@ -11,14 +11,14 @@ export default function Report() {
   const [err, setErr] = useState('');
 
   useEffect(() => {
-    gql(`query($p:Period!){ summary(period:$p){ totalSale cash bkash due expense profit received cashInHand saleCount customerDue supplierDue lowStockCount } }`, { p })
+    gql(`query($p:Period!){ summary(period:$p){ totalSale cash bkash due expense profit received cashInHand saleCount customerDue supplierDue lowStockCount returnTotal } }`, { p })
       .then((d) => setS(d.summary)).catch((e) => setErr(e.message));
   }, [p]);
 
   const rows = s ? [
     ['📊 মোট বিক্রি', taka(s.totalSale)], ['   নগদ', taka(s.cash)], ['   বিকাশ', taka(s.bkash)], ['   বাকিতে', taka(s.due)],
     ['💰 মোট খরচ', taka(s.expense)], ['💵 বাকি আদায়', taka(s.received)], ['💵 হাতে থাকার কথা', taka(s.cashInHand)],
-    ['📈 আনুমানিক লাভ', taka(s.profit)], ['🧾 বিক্রির সংখ্যা', s.saleCount],
+    ['📈 আনুমানিক লাভ', taka(s.profit)], ['🧾 বিক্রির সংখ্যা', s.saleCount], ['↩️ ফেরত (বাদ গেছে)', taka(s.returnTotal)],
     ['📕 মোট বাকি (পাবেন)', taka(s.customerDue)], ['🚚 মোট পাওনা (দেবেন)', taka(s.supplierDue)], ['📦 কমে যাওয়া পণ্য', s.lowStockCount],
   ] : [];
 
