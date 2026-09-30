@@ -1,0 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .card { @apply bg-white rounded-2xl shadow-sm border border-gray-100 p-4; }
+  .btn { @apply w-full rounded-2xl bg-emerald-600 text-white font-semibold py-4 text-lg active:scale-95 transition disabled:opacity-50; }
+  .btn-outline { @apply w-full rounded-2xl border-2 border-emerald-600 text-emerald-700 font-semibold py-3 text-base bg-white active:scale-95 transition; }
+  .btn-red { @apply w-full rounded-2xl bg-rose-500 text-white font-semibold py-4 text-lg active:scale-95 transition disabled:opacity-50; }
+  .input { @apply w-full rounded-xl border border-gray-300 px-4 py-3 text-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white; }
+  .label { @apply block text-sm font-medium text-gray-600 mb-1; }
+  .chip { @apply px-4 py-2 rounded-full border text-base bg-white; }
+  .chip-on { @apply bg-emerald-600 text-white border-emerald-600; }
+}
+body { @apply bg-gray-50 text-gray-900; }

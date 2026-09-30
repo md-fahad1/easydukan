@@ -1,0 +1,203 @@
+scalar DateTime
+
+enum Period {
+  TODAY
+  WEEK
+  MONTH
+}
+
+type Tenant {
+  id: ID!
+  name: String!
+  shopType: String!
+  plan: String!
+}
+
+type User {
+  id: ID!
+  name: String!
+  phone: String!
+  role: String!
+}
+
+type AuthPayload {
+  token: String!
+  user: User!
+  tenant: Tenant!
+}
+
+type Customer {
+  id: ID!
+  name: String!
+  phone: String
+  balance: Float!
+  updatedAt: DateTime!
+}
+
+type Supplier {
+  id: ID!
+  name: String!
+  phone: String
+  balance: Float!
+}
+
+type Product {
+  id: ID!
+  name: String!
+  unit: String!
+  purchasePrice: Float!
+  sellingPrice: Float!
+  stock: Float!
+  minStock: Float!
+}
+
+type SaleItem {
+  id: ID!
+  name: String!
+  qty: Float!
+  price: Float!
+}
+
+type Sale {
+  id: ID!
+  total: Float!
+  cashAmount: Float!
+  bkashAmount: Float!
+  dueAmount: Float!
+  createdAt: DateTime!
+  customer: Customer
+  items: [SaleItem!]!
+}
+
+type Expense {
+  id: ID!
+  category: String!
+  amount: Float!
+  note: String
+  createdAt: DateTime!
+}
+
+type Purchase {
+  id: ID!
+  total: Float!
+  paid: Float!
+  due: Float!
+  createdAt: DateTime!
+}
+
+type Summary {
+  totalSale: Float!
+  cash: Float!
+  bkash: Float!
+  due: Float!
+  expense: Float!
+  profit: Float!
+  received: Float!
+  cashInHand: Float!
+  saleCount: Int!
+  customerDue: Float!
+  supplierDue: Float!
+  lowStockCount: Int!
+}
+
+type LedgerEntry {
+  date: DateTime!
+  type: String!
+  amount: Float!
+  note: String
+}
+
+type DailyClosing {
+  id: ID!
+  date: String!
+  totalSale: Float!
+  cash: Float!
+  bkash: Float!
+  due: Float!
+  expense: Float!
+  profit: Float!
+  cashInHand: Float!
+}
+
+input RegisterInput {
+  name: String!
+  shopName: String!
+  phone: String!
+  shopType: String
+  password: String!
+}
+
+input AddUserInput {
+  name: String!
+  phone: String!
+  password: String!
+  role: String!
+}
+
+input ProductInput {
+  name: String!
+  unit: String
+  purchasePrice: Float
+  sellingPrice: Float
+  stock: Float
+  minStock: Float
+}
+
+input SaleItemInput {
+  productId: ID!
+  qty: Float!
+  price: Float
+}
+
+input SaleInput {
+  amount: Float
+  items: [SaleItemInput!]
+  cashAmount: Float
+  bkashAmount: Float
+  dueAmount: Float
+  customerId: ID
+  note: String
+}
+
+input PurchaseItemInput {
+  productId: ID!
+  qty: Float!
+  cost: Float!
+}
+
+input PurchaseInput {
+  supplierId: ID
+  total: Float
+  paid: Float
+  items: [PurchaseItemInput!]
+}
+
+type Query {
+  me: User!
+  summary(period: Period!): Summary!
+  customers: [Customer!]!
+  customer(id: ID!): Customer
+  customerLedger(customerId: ID!): [LedgerEntry!]!
+  suppliers: [Supplier!]!
+  products: [Product!]!
+  sales(period: Period!): [Sale!]!
+  expenses(period: Period!): [Expense!]!
+  closings: [DailyClosing!]!
+  users: [User!]!
+}
+
+type Mutation {
+  register(input: RegisterInput!): AuthPayload!
+  login(phone: String!, password: String!): AuthPayload!
+  addUser(input: AddUserInput!): User!
+  createCustomer(name: String!, phone: String): Customer!
+  createSupplier(name: String!, phone: String): Supplier!
+  createProduct(input: ProductInput!): Product!
+  updateProduct(id: ID!, input: ProductInput!): Product!
+  createSale(input: SaleInput!): Sale!
+  createExpense(category: String!, amount: Float!, note: String): Expense!
+  receivePayment(customerId: ID!, amount: Float!, method: String): Customer!
+  paySupplier(supplierId: ID!, amount: Float!, method: String): Supplier!
+  createPurchase(input: PurchaseInput!): Purchase!
+  closeDay: DailyClosing!
+}

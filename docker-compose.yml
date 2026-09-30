@@ -1,0 +1,14 @@
+services:
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: easydukan
+      POSTGRES_PASSWORD: easydukan
+      POSTGRES_DB: easydukan
+    ports:
+      - "5432:5432"
+    volumes:
+      - easydukan_pg:/var/lib/postgresql/data
+volumes:
+  easydukan_pg:
