@@ -2,14 +2,63 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer components {
-  .card { @apply bg-white rounded-2xl shadow-sm border border-gray-100 p-4; }
-  .btn { @apply w-full rounded-2xl bg-emerald-600 text-white font-semibold py-4 text-lg active:scale-95 transition disabled:opacity-50; }
-  .btn-outline { @apply w-full rounded-2xl border-2 border-emerald-600 text-emerald-700 font-semibold py-3 text-base bg-white active:scale-95 transition; }
-  .btn-red { @apply w-full rounded-2xl bg-rose-500 text-white font-semibold py-4 text-lg active:scale-95 transition disabled:opacity-50; }
-  .input { @apply w-full rounded-xl border border-gray-300 px-4 py-3 text-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white; }
-  .label { @apply block text-sm font-medium text-gray-600 mb-1; }
-  .chip { @apply px-4 py-2 rounded-full border text-base bg-white; }
-  .chip-on { @apply bg-emerald-600 text-white border-emerald-600; }
+/* ---------- Animations ---------- */
+@keyframes fade-up { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes pop { from { opacity: 0; transform: scale(.85); } to { opacity: 1; transform: scale(1); } }
+@keyframes slide-up { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes shimmer { 100% { transform: translateX(100%); } }
+@keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+@keyframes ring { 0% { box-shadow: 0 0 0 0 rgba(16,185,129,.45); } 100% { box-shadow: 0 0 0 16px rgba(16,185,129,0); } }
+
+@layer base {
+  html { -webkit-tap-highlight-color: transparent; }
+  body {
+    @apply text-slate-800 antialiased min-h-screen;
+    background: linear-gradient(180deg, #ecfdf5 0%, #f8fafc 280px);
+    background-attachment: fixed;
+  }
+  input, select, textarea, button { font-family: inherit; }
+  ::selection { background: #a7f3d0; }
 }
-body { @apply bg-gray-50 text-gray-900; }
+
+@layer components {
+  /* কার্ড */
+  .card { @apply bg-white rounded-3xl p-4 border border-slate-100 shadow-soft; }
+  a.card, button.card { @apply transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg active:scale-[.98]; }
+
+  /* বাটন */
+  .btn { @apply block w-full rounded-2xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-semibold py-3.5 text-lg shadow-glow transition-all duration-200 hover:brightness-105 active:scale-95 disabled:opacity-50 disabled:pointer-events-none; }
+  .btn-outline { @apply w-full rounded-2xl border-2 border-emerald-500 text-emerald-700 font-semibold py-3 text-base bg-white transition-all duration-200 hover:bg-emerald-50 active:scale-95 disabled:opacity-50 disabled:pointer-events-none; }
+  .btn-red { @apply block w-full rounded-2xl bg-gradient-to-r from-rose-500 to-rose-600 text-white font-semibold py-3.5 text-lg shadow-glow-red transition-all duration-200 hover:brightness-105 active:scale-95 disabled:opacity-50 disabled:pointer-events-none; }
+
+  /* ইনপুট */
+  .input { @apply w-full rounded-2xl border-2 border-slate-200 bg-white px-4 py-3 text-lg placeholder:text-slate-400 transition-all duration-200 focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100; }
+  .label { @apply block text-sm font-semibold text-slate-600 mb-1.5; }
+
+  /* চিপ */
+  .chip { @apply px-4 py-2 rounded-full border-2 border-slate-200 text-base bg-white text-slate-600 transition-all duration-200 active:scale-95; }
+  .chip-on { @apply bg-gradient-to-r from-emerald-500 to-emerald-600 text-white border-transparent shadow-glow; }
+
+  /* ছোট ব্যাজ */
+  .badge { @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold; }
+
+  /* লোডিং স্কেলেটন */
+  .skeleton { @apply relative overflow-hidden rounded-2xl bg-slate-200/70; }
+  .skeleton::after { content: ''; @apply absolute inset-0 bg-gradient-to-r from-transparent via-white/70 to-transparent; transform: translateX(-100%); animation: shimmer 1.4s infinite; }
+
+  /* একটার পর একটা এনিমেশন (list/card এ) */
+  .stagger > * { animation: fade-up .5s cubic-bezier(.22,1,.36,1) both; }
+  .stagger > *:nth-child(1) { animation-delay: 0ms; }
+  .stagger > *:nth-child(2) { animation-delay: 60ms; }
+  .stagger > *:nth-child(3) { animation-delay: 120ms; }
+  .stagger > *:nth-child(4) { animation-delay: 180ms; }
+  .stagger > *:nth-child(5) { animation-delay: 240ms; }
+  .stagger > *:nth-child(6) { animation-delay: 300ms; }
+  .stagger > *:nth-child(7) { animation-delay: 360ms; }
+  .stagger > *:nth-child(n+8) { animation-delay: 420ms; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}

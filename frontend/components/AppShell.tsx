@@ -44,6 +44,31 @@ const PHARMA_ADD = [
   { href: '/team', icon: '👥', label: 'কর্মচারী' },
 ];
 
+// নিচের + মেনুর টাইলগুলোর রং (একটার পর একটা ঘুরে ঘুরে)
+const TONES = [
+  'bg-emerald-50 text-emerald-700',
+  'bg-rose-50 text-rose-700',
+  'bg-amber-50 text-amber-700',
+  'bg-sky-50 text-sky-700',
+  'bg-violet-50 text-violet-700',
+  'bg-teal-50 text-teal-700',
+];
+
+// নিচের নেভিগেশনের একটা আইটেম (বাইরে রাখা হয়েছে যাতে বারবার রিসেট না হয়)
+function NavItem({ n, on }: { n: any; on: boolean }) {
+  return (
+    <Link
+      href={n.href}
+      className={`flex flex-col items-center gap-0.5 min-w-[64px] px-3 py-1.5 rounded-2xl text-xs transition-all duration-200 ${
+        on ? 'text-emerald-700 font-bold bg-emerald-50' : 'text-slate-400 hover:text-slate-600'
+      }`}
+    >
+      <span className={`text-2xl transition-all duration-200 ${on ? 'scale-110' : 'grayscale opacity-60'}`}>{n.icon}</span>
+      {n.label}
+    </Link>
+  );
+}
+
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const path = usePathname();
@@ -67,7 +92,17 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     setOpen(false);
   }, [path]);
 
-  if (!ready) return <div className="p-8 text-center text-gray-400">লোড হচ্ছে...</div>;
+  // লোডিং স্ক্রিন
+  if (!ready) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4">
+        <div className="text-6xl animate-float">🏪</div>
+        <div className="w-8 h-8 rounded-full border-4 border-emerald-200 border-t-emerald-600 animate-spin" />
+        <div className="text-slate-400 text-sm">লোড হচ্ছে...</div>
+      </div>
+    );
+  }
+
   const employee = role === 'EMPLOYEE';
   const nav = pharma ? PHARMA_NAV : NAV;
   const add = pharma ? PHARMA_ADD : ADD;
@@ -75,40 +110,76 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const active = (h: string) => (h === '/' || h === '/pharmacy' ? path === h : path.startsWith(h));
   const left = employee ? nav.filter((n) => n.href === homeHref) : nav.slice(0, 2);
   const right = employee ? [] : nav.slice(2);
-
-  const Item = ({ n }: { n: any }) => (
-    <Link href={n.href} className={`flex flex-col items-center text-sm px-3 py-1 ${active(n.href) ? 'text-emerald-600 font-bold' : 'text-gray-500'}`}>
-      <span className="text-2xl">{n.icon}</span>{n.label}
-    </Link>
-  );
+  const menuItems = add.filter((a) => !employee || a.href === homeHref);
+  const initial = (shop || 'ই').trim().charAt(0);
 
   return (
-    <div className="max-w-md mx-auto min-h-screen pb-28 relative">
-      <header className="sticky top-0 z-10 bg-emerald-600 text-white px-4 py-3 flex justify-between items-center">
-        <div className="font-bold text-lg">{shop || 'ইজিদোকান'}</div>
-        <button onClick={logout} className="text-sm opacity-90 underline">লগ আউট</button>
+    <div className="max-w-md mx-auto min-h-screen pb-32 relative">
+      {/* উপরের হেডার */}
+      <header className="sticky top-0 z-10 bg-gradient-to-br from-emerald-600 via-emerald-600 to-teal-600 text-white px-4 pt-3 pb-4 rounded-b-3xl shadow-glow">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-11 h-11 shrink-0 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center text-xl font-bold">
+              {initial}
+            </div>
+            <div className="min-w-0">
+              <div className="text-xs text-emerald-100">{pharma ? 'ফার্মেসি ম্যানেজার' : 'ইজিদোকান'}</div>
+              <div className="font-bold text-lg leading-tight truncate">{shop || 'ইজিদোকান'}</div>
+            </div>
+          </div>
+          <button onClick={logout} className="shrink-0 bg-white/15 hover:bg-white/25 active:scale-95 transition rounded-full px-4 py-2 text-sm font-medium">
+            লগ আউট
+          </button>
+        </div>
       </header>
-      <main className="p-4 space-y-4">{children}</main>
 
+      {/* পেজের কন্টেন্ট (stagger = একটার পর একটা ভেসে ওঠে) */}
+      <main className="px-4 pt-5 pb-4 space-y-4 stagger">{children}</main>
+
+      {/* + মেনু */}
       {open && (
-        <div className="fixed inset-0 z-20 bg-black/40" onClick={() => setOpen(false)}>
-          <div className="absolute bottom-20 left-0 right-0 max-w-md mx-auto bg-white rounded-t-3xl p-5 max-h-[75vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="font-bold mb-3">কি যোগ করবেন?</div>
-            <div className="grid grid-cols-2 gap-3">
-              {add.filter((a) => !employee || a.href === homeHref).map((a) => (
-                <Link key={a.href} href={a.href} className="card text-center py-4 text-lg">
-                  <div className="text-3xl">{a.icon}</div>{a.label}
-                </Link>
-              ))}
+        <div className="fixed inset-0 z-20 bg-slate-900/40 backdrop-blur-sm animate-fade-in" onClick={() => setOpen(false)}>
+          <div className="absolute bottom-24 inset-x-0 px-3">
+            <div
+              className="max-w-md mx-auto bg-white rounded-3xl p-5 shadow-2xl max-h-[70vh] overflow-y-auto animate-slide-up"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="w-10 h-1.5 rounded-full bg-slate-200 mx-auto mb-4" />
+              <div className="font-bold text-lg mb-3">কি যোগ করবেন?</div>
+              <div className="grid grid-cols-3 gap-3">
+                {menuItems.map((a, i) => (
+                  <Link
+                    key={a.href}
+                    href={a.href}
+                    onClick={() => setOpen(false)}
+                    style={{ animationDelay: `${i * 35}ms` }}
+                    className={`animate-pop flex flex-col items-center justify-center text-center gap-1.5 rounded-2xl p-3 min-h-[92px] text-[13px] font-semibold leading-tight transition-all active:scale-95 hover:shadow-md ${TONES[i % TONES.length]}`}
+                  >
+                    <span className="text-3xl">{a.icon}</span>
+                    {a.label}
+                  </Link>
+                ))}
+              </div>
             </div>
           </div>
         </div>
       )}
 
-      <nav className="fixed bottom-0 left-0 right-0 z-30 max-w-md mx-auto bg-white border-t flex items-end justify-around px-2 pt-1 pb-2">
-        {left.map((n) => <Item key={n.href} n={n} />)}
-        <button onClick={() => setOpen(!open)} className="-mt-6 w-16 h-16 rounded-full bg-emerald-600 text-white text-4xl shadow-lg active:scale-95">+</button>
-        {right.map((n) => <Item key={n.href} n={n} />)}
+      {/* নিচের নেভিগেশন */}
+      <nav className="fixed bottom-0 left-0 right-0 z-30 max-w-md mx-auto bg-white/90 backdrop-blur-xl border-t border-slate-100 rounded-t-3xl shadow-[0_-8px_30px_-12px_rgba(15,23,42,.18)] flex items-end justify-around px-2 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+        {left.map((n) => <NavItem key={n.href} n={n} on={active(n.href)} />)}
+        <button
+          onClick={() => setOpen(!open)}
+          aria-label="যোগ করুন"
+          className={`-mt-8 w-16 h-16 rounded-full text-white text-4xl leading-none flex items-center justify-center transition-all duration-300 active:scale-90 ${
+            open
+              ? 'rotate-45 bg-gradient-to-br from-rose-500 to-rose-600 shadow-glow-red'
+              : 'bg-gradient-to-br from-emerald-500 to-teal-600 shadow-glow animate-ring'
+          }`}
+        >
+          +
+        </button>
+        {right.map((n) => <NavItem key={n.href} n={n} on={active(n.href)} />)}
       </nav>
     </div>
   );
