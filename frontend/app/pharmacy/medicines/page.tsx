@@ -21,11 +21,34 @@ export default function Medicines() {
   const [scan, setScan] = useState<'' | 'form' | 'search'>('');
   const [err, setErr] = useState('');
   const [busy, setBusy] = useState(false);
+  const [sugg, setSugg] = useState<any[]>([]);
+  const [picked, setPicked] = useState('');
 
   const load = () =>
     gql(`query{ products{ id name genericName company barcode form piecesPerStrip stripsPerBox purchasePrice sellingPrice stock minStock } }`)
       .then((d) => setList(d.products)).catch((e) => setErr(e.message));
   useEffect(() => { load(); }, []);
+
+  // নাম লিখলে বাংলাদেশের ওষুধের তালিকা থেকে সাজেশন দেখাবে
+  useEffect(() => {
+    const s = f.name.trim();
+    if (editId || s.length < 2 || s === picked) { setSugg([]); return; }
+    let dead = false;
+    const t = setTimeout(() => {
+      gql(`query($q:String!){ searchCatalog(q:$q){ id brand genericName strength dosage form company } }`, { q: s })
+        .then((d) => { if (!dead) setSugg(d.searchCatalog); })
+        .catch(() => { if (!dead) setSugg([]); });
+    }, 250);
+    return () => { dead = true; clearTimeout(t); };
+  }, [f.name, editId, picked]);
+
+  const pick = (c: any) => {
+    const plain = c.form === 'TABLET' || c.form === 'CAPSULE';
+    const name = (plain ? `${c.brand} ${c.strength || ''}` : `${c.brand} ${c.dosage} ${c.strength || ''}`).replace(/\s+/g, ' ').trim();
+    setPicked(name);
+    setSugg([]);
+    setF((p: any) => ({ ...p, name, genericName: c.genericName, company: c.company, form: c.form, piecesPerStrip: plain ? p.piecesPerStrip : '1' }));
+  };
   const set = (k: string, v: string) => setF({ ...f, [k]: v });
 
   const pack = { form: f.form, piecesPerStrip: f.form === 'SYRUP' ? 1 : Number(f.piecesPerStrip) || 1, stripsPerBox: Number(f.stripsPerBox) || 1 };
@@ -102,7 +125,19 @@ export default function Medicines() {
       {show && (
         <div className="card space-y-3">
           <div className="font-bold">{editId ? 'ওষুধ এডিট' : 'নতুন ওষুধ'}</div>
-          <input className="input" placeholder="ওষুধের নাম (যেমন: Napa 500mg)" value={f.name} onChange={(e) => set('name', e.target.value)} />
+          <div className="relative">
+            <input className="input" placeholder="ওষুধের নাম লিখুন (যেমন: napa, seclo, ace)" value={f.name} onChange={(e) => { set('name', e.target.value); setPicked(''); }} />
+            {sugg.length > 0 && (
+              <div className="absolute z-20 left-0 right-0 mt-1 bg-white border rounded-xl shadow-lg max-h-72 overflow-y-auto">
+                {sugg.map((c) => (
+                  <button key={c.id} type="button" onClick={() => pick(c)} className="w-full text-left px-3 py-2 border-b last:border-b-0 active:bg-gray-100">
+                    <div className="font-medium">{c.brand} <span className="text-sm text-gray-500">{c.strength}</span></div>
+                    <div className="text-xs text-gray-500">{c.dosage} • {c.genericName} • {c.company}</div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
           <input className="input" placeholder="জেনেরিক নাম (ঐচ্ছিক, যেমন: Paracetamol)" value={f.genericName} onChange={(e) => set('genericName', e.target.value)} />
           <input className="input" placeholder="কোম্পানি (ঐচ্ছিক)" value={f.company} onChange={(e) => set('company', e.target.value)} />
           <div className="flex flex-wrap gap-2">

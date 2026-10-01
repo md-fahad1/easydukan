@@ -239,3 +239,15 @@ model SaleReturnItem {
   @@index([saleItemId])
   @@index([returnId])
 }
+model MedicineCatalog {
+  id          Int     @id @default(autoincrement())
+  brand       String
+  genericName String
+  strength    String?
+  dosage      String
+  form        String
+  company     String
+
+  @@index([brand])
+  @@index([genericName])
+}

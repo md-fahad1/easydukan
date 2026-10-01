@@ -1,0 +1,13 @@
+type CatalogItem {
+  id: ID!
+  brand: String!
+  genericName: String!
+  strength: String
+  dosage: String!
+  form: String!
+  company: String!
+}
+
+type Query {
+  searchCatalog(q: String!): [CatalogItem!]!
+}
