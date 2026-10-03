@@ -6,7 +6,6 @@ import { gql, taka } from '@/lib/api';
 const TABS: [string, string][] = [['TODAY', 'আজ'], ['WEEK', 'এই সপ্তাহ'], ['MONTH', 'এই মাস']];
 const PERIOD_TITLE: Record<string, string> = { TODAY: 'আজকের', WEEK: 'এই সপ্তাহের', MONTH: 'এই মাসের' };
 
-// সংখ্যা 0 থেকে গুনে গুনে উঠবে
 function CountUp({ value, format = taka }: { value: number; format?: (n: number) => string }) {
   const [n, setN] = useState(0);
   useEffect(() => {
@@ -26,7 +25,6 @@ function CountUp({ value, format = taka }: { value: number; format?: (n: number)
 
 const plain = (n: number) => n.toLocaleString('bn-BD');
 
-// ছোট স্ট্যাট টাইল
 function Tile({ icon, label, value, tone, format }: { icon: string; label: string; value: number; tone: string; format?: (n: number) => string }) {
   return (
     <div className="card">
@@ -37,7 +35,6 @@ function Tile({ icon, label, value, tone, format }: { icon: string; label: strin
   );
 }
 
-// নিচের লিস্ট-রো
 function Line({ icon, label, value, tone, format }: { icon: string; label: string; value: number; tone: string; format?: (n: number) => string }) {
   return (
     <div className="flex items-center gap-3 py-3">
@@ -52,7 +49,7 @@ export default function Report() {
   const [p, setP] = useState('TODAY');
   const [s, setS] = useState<any>(null);
   const [err, setErr] = useState('');
-  const [grow, setGrow] = useState(false); // বারের এনিমেশন চালু করার জন্য
+  const [grow, setGrow] = useState(false);
 
   useEffect(() => {
     setS(null); setGrow(false); setErr('');
@@ -65,7 +62,7 @@ export default function Report() {
   const sum = s ? (s.cash || 0) + (s.bkash || 0) + (s.due || 0) : 0;
   const pct = (v: number) => (sum > 0 ? ((v || 0) / sum) * 100 : 0);
   const segs = s ? [
-    { k: 'নগদ', v: s.cash, bar: 'bg-emerald-500', dot: 'bg-emerald-500' },
+    { k: 'নগদ', v: s.cash, bar: 'bg-brand-500', dot: 'bg-brand-500' },
     { k: 'বিকাশ', v: s.bkash, bar: 'bg-pink-500', dot: 'bg-pink-500' },
     { k: 'বাকিতে', v: s.due, bar: 'bg-amber-400', dot: 'bg-amber-400' },
   ] : [];
@@ -74,18 +71,18 @@ export default function Report() {
     <AppShell>
       <h1 className="text-2xl font-bold text-slate-800">📊 রিপোর্ট</h1>
 
-      {/* স্লাইড হওয়া ট্যাব */}
-      <div className="relative grid grid-cols-3 rounded-2xl bg-slate-100 p-1">
+      {/* ট্যাব */}
+      <div className="relative grid grid-cols-3 rounded-full bg-white shadow-soft p-1.5">
         <div
-          className="absolute top-1 bottom-1 left-1 w-[calc((100%-0.5rem)/3)] rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 shadow-glow transition-transform duration-300 ease-out"
+          className="absolute top-1.5 bottom-1.5 left-1.5 w-[calc((100%-0.75rem)/3)] rounded-full bg-ink transition-transform duration-300 ease-out"
           style={{ transform: `translateX(${idx * 100}%)` }}
         />
         {TABS.map(([k, v]) => (
-          <button key={k} onClick={() => setP(k)} className={`relative z-10 py-2.5 rounded-xl font-semibold transition-colors duration-300 ${p === k ? 'text-white' : 'text-slate-500'}`}>{v}</button>
+          <button key={k} onClick={() => setP(k)} className={`relative z-10 py-2.5 rounded-full font-semibold transition-colors duration-300 ${p === k ? 'text-white' : 'text-slate-500'}`}>{v}</button>
         ))}
       </div>
 
-      {err && <div className="animate-pop rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 px-4 py-3 text-center">⚠️ {err}</div>}
+      {err && <div className="animate-pop rounded-2xl bg-rose-50 text-rose-700 px-4 py-3 text-center">⚠️ {err}</div>}
 
       {!s && !err && (
         <>
@@ -96,14 +93,13 @@ export default function Report() {
       )}
 
       {s && (
-        // key বদলালে (ট্যাব বদলালে) সব আবার নতুন করে এনিমেট হয়
         <div key={p} className="space-y-4 stagger">
-          {/* হিরো: মোট বিক্রি */}
-          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-700 text-white p-5 shadow-glow">
+          {/* মোট বিক্রি */}
+          <div className="relative overflow-hidden rounded-[32px] bg-gradient-to-br from-brand-400 via-brand-500 to-brand-700 text-white p-5 shadow-glow">
             <div className="absolute -right-8 -top-8 w-36 h-36 rounded-full bg-white/10" />
             <div className="absolute right-8 -bottom-12 w-28 h-28 rounded-full bg-white/10" />
             <div className="relative">
-              <div className="text-emerald-100 text-sm">{PERIOD_TITLE[p]} মোট বিক্রি</div>
+              <div className="text-brand-50 text-sm">{PERIOD_TITLE[p]} মোট বিক্রি</div>
               <div className="text-4xl font-bold mt-1"><CountUp value={s.totalSale} /></div>
               <div className="mt-4 flex flex-wrap gap-2 text-sm">
                 <span className="rounded-full bg-white/20 backdrop-blur px-3 py-1">🧾 {plain(s.saleCount)}টি বিক্রি</span>
@@ -112,7 +108,7 @@ export default function Report() {
             </div>
           </div>
 
-          {/* নগদ / বিকাশ / বাকি ভাগ */}
+          {/* নগদ / বিকাশ / বাকি */}
           <div className="card">
             <div className="font-bold text-slate-700 mb-3">টাকা কীভাবে এলো?</div>
             <div className="flex h-4 w-full overflow-hidden rounded-full bg-slate-100">
@@ -132,30 +128,28 @@ export default function Report() {
             </div>
           </div>
 
-          {/* ২x২ টাইল */}
           <div className="grid grid-cols-2 gap-3 stagger">
             <Tile icon="💸" label="মোট খরচ" value={s.expense} tone="bg-rose-50" />
-            <Tile icon="💵" label="বাকি আদায়" value={s.received} tone="bg-sky-50" />
-            <Tile icon="👛" label="হাতে থাকার কথা" value={s.cashInHand} tone="bg-emerald-50" />
-            <Tile icon="📦" label="কমে যাওয়া পণ্য" value={s.lowStockCount} tone="bg-amber-50" format={(n) => `${plain(n)}টি`} />
+            <Tile icon="💵" label="বাকির টাকা পেয়েছেন" value={s.received} tone="bg-sky-50" />
+            <Tile icon="👛" label="হাতে থাকার কথা" value={s.cashInHand} tone="bg-brand-50" />
+            <Tile icon="📦" label="শেষ হয়ে আসছে" value={s.lowStockCount} tone="bg-amber-50" format={(n) => `${plain(n)}টি`} />
           </div>
 
           {/* লাভ */}
-          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-violet-500 to-indigo-600 text-white p-5 shadow-lg">
-            <div className="absolute -left-6 -bottom-8 w-32 h-32 rounded-full bg-white/10" />
+          <div className="relative overflow-hidden rounded-[32px] bg-ink text-white p-5">
+            <div className="absolute -left-6 -bottom-8 w-32 h-32 rounded-full bg-white/5" />
             <div className="relative flex items-center justify-between">
               <div>
-                <div className="text-violet-100 text-sm">📈 আনুমানিক লাভ</div>
+                <div className="text-slate-300 text-sm">📈 আনুমানিক লাভ</div>
                 <div className="text-3xl font-bold mt-1"><CountUp value={s.profit} /></div>
               </div>
               <div className="text-5xl animate-float">💹</div>
             </div>
           </div>
 
-          {/* মোট পাওনা / দেনা */}
           <div className="card divide-y divide-slate-100 !py-1">
-            <Line icon="📕" label="মোট বাকি (পাবেন)" value={s.customerDue} tone="bg-amber-50" />
-            <Line icon="🚚" label="মোট পাওনা (দেবেন)" value={s.supplierDue} tone="bg-sky-50" />
+            <Line icon="📕" label="কাস্টমারের কাছে পাবেন" value={s.customerDue} tone="bg-amber-50" />
+            <Line icon="🚚" label="মালদাতাকে দিতে হবে" value={s.supplierDue} tone="bg-sky-50" />
           </div>
         </div>
       )}

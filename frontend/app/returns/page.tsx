@@ -11,6 +11,16 @@ const HIST_Q = `query($d:Int!){ saleReturns(days:$d){ id total refund dueAdjuste
 const unitOf = (u?: string | null) => (u ? UNIT[u] || u : '');
 const r2 = (n: number) => Math.round(n * 100) / 100;
 
+function Seg({ items, value, onChange }: { items: [any, string][]; value: any; onChange: (v: any) => void }) {
+  return (
+    <div className="flex gap-1.5 bg-white rounded-full p-1.5 shadow-soft">
+      {items.map(([k, l]) => (
+        <button key={String(k)} onClick={() => onChange(k)} className={`flex-1 rounded-full py-2 text-sm font-semibold transition ${value === k ? 'bg-ink text-white' : 'text-slate-500'}`}>{l}</button>
+      ))}
+    </div>
+  );
+}
+
 export default function Returns() {
   const [tab, setTab] = useState<'new' | 'list'>('new');
   const [days, setDays] = useState(7);
@@ -35,7 +45,7 @@ export default function Returns() {
   const shown = useMemo(() => {
     const k = q.trim().toLowerCase();
     return sales.filter((s) => {
-      if (!s.items.some((i: any) => i.qty - i.returnedQty > 0)) return false; // সব ফেরত হয়ে গেলে দেখাব না
+      if (!s.items.some((i: any) => i.qty - i.returnedQty > 0)) return false;
       if (!k) return true;
       return (s.customerName || '').toLowerCase().includes(k) || s.items.some((i: any) => i.name.toLowerCase().includes(k));
     });
@@ -59,7 +69,7 @@ export default function Returns() {
   const submit = async () => {
     if (!sale) return;
     const items = Object.entries(qty).map(([saleItemId, v]) => ({ saleItemId, qty: Number(v) || 0 })).filter((x) => x.qty > 0);
-    if (!items.length) { setErr('কত ফেরত দিবেন লিখুন'); return; }
+    if (!items.length) { setErr('কতটা ফেরত দিচ্ছে লিখুন'); return; }
     if (!window.confirm(`মোট ${taka(total)} ফেরত নিবেন?`)) return;
     setBusy(true); setErr('');
     try {
@@ -75,52 +85,49 @@ export default function Returns() {
 
   return (
     <AppShell>
-      <h1 className="text-2xl font-bold">বিক্রি ফেরত</h1>
+      <h1 className="text-2xl font-bold text-slate-800">↩️ বিক্রি ফেরত</h1>
 
-      <div className="flex gap-2">
-        <button onClick={() => setTab('new')} className={`chip flex-1 ${tab === 'new' ? 'chip-on' : ''}`}>↩️ নতুন ফেরত</button>
-        <button onClick={() => setTab('list')} className={`chip flex-1 ${tab === 'list' ? 'chip-on' : ''}`}>📋 ফেরতের তালিকা</button>
-      </div>
-      <div className="flex gap-2">
-        {DAYS.map(([d, l]) => <button key={d} onClick={() => setDays(d)} className={`chip flex-1 ${days === d ? 'chip-on' : ''}`}>{l}</button>)}
-      </div>
+      <Seg items={[['new', 'নতুন ফেরত'], ['list', 'ফেরতের তালিকা']]} value={tab} onChange={setTab} />
+      <Seg items={DAYS} value={days} onChange={setDays} />
 
-      {ok && <div className="card bg-emerald-50 border-emerald-200 text-emerald-700">{ok}</div>}
-      {err && <div className="text-rose-600">{err}</div>}
+      {ok && <div className="animate-pop rounded-2xl bg-brand-50 text-brand-700 font-semibold px-4 py-3 text-center">{ok}</div>}
+      {err && <div className="animate-pop rounded-2xl bg-rose-50 text-rose-700 px-4 py-3 text-center">⚠️ {err}</div>}
 
       {tab === 'new' && (
         <>
-          <input className="input" placeholder="কাস্টমার বা ওষুধের নাম দিয়ে খুঁজুন" value={q} onChange={(e) => setQ(e.target.value)} />
+          <div className="relative">
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl">🔍</span>
+            <input className="input !pl-12" placeholder="কাস্টমার বা পণ্যের নাম দিয়ে খুঁজুন" value={q} onChange={(e) => setQ(e.target.value)} />
+          </div>
           <div className="space-y-2">
             {shown.map((s) => (
-              <div key={s.id} className="card p-0 overflow-hidden">
+              <div key={s.id} className="card !p-0 overflow-hidden">
                 <button onClick={() => pick(s.id)} className="w-full text-left p-4 flex justify-between gap-3">
                   <div className="min-w-0">
-                    <div className="font-semibold truncate">{s.customerName || 'নগদ কাস্টমার'}</div>
-                    <div className="text-sm text-gray-500">{dateOf(s.createdAt)} • {timeOf(s.createdAt)}</div>
-                    <div className="text-sm text-gray-500 truncate">{s.items.map((i: any) => i.name).join(', ')}</div>
+                    <div className="font-semibold text-slate-800 truncate">{s.customerName || 'নগদ কাস্টমার'}</div>
+                    <div className="text-sm text-slate-500">{dateOf(s.createdAt)} • {timeOf(s.createdAt)}</div>
+                    <div className="text-sm text-slate-500 truncate">{s.items.map((i: any) => i.name).join(', ')}</div>
                   </div>
                   <div className="text-right shrink-0">
-                    <div className="font-bold">{taka(s.total)}</div>
+                    <div className="font-bold text-slate-800">{taka(s.total)}</div>
                     {s.returnedTotal > 0 && <div className="text-xs text-rose-500">ফেরত {taka(s.returnedTotal)}</div>}
                   </div>
                 </button>
 
                 {open === s.id && (
-                  <div className="border-t bg-gray-50 p-4 space-y-3">
+                  <div className="bg-slate-50 p-4 space-y-3 animate-fade-in">
                     {s.items.filter((i: any) => left(i) > 0).map((i: any) => (
-                      <div key={i.id} className="bg-white rounded-xl border p-3 space-y-2">
+                      <div key={i.id} className="bg-white rounded-2xl p-3 space-y-2 shadow-soft">
                         <div className="flex justify-between gap-2">
-                          <div className="font-medium">{i.name}</div>
-                          <div className="text-sm text-gray-500 shrink-0">{taka(i.price)} / {unitOf(i.unit) || 'একক'}</div>
+                          <div className="font-medium text-slate-800">{i.name}</div>
+                          <div className="text-sm text-slate-500 shrink-0">{taka(i.price)} / {unitOf(i.unit) || 'একক'}</div>
                         </div>
-                        <div className="text-sm text-gray-500">ফেরত দেওয়া যাবে: {left(i)} {unitOf(i.unit)}</div>
+                        <div className="text-sm text-slate-500">ফেরত দেওয়া যাবে: {left(i)} {unitOf(i.unit)}</div>
                         <div className="flex items-center gap-2">
-                          <button className="w-12 h-12 rounded-xl border text-2xl active:scale-95" onClick={() => setItem(i, (Number(qty[i.id]) || 0) - 1)}>−</button>
-                          <input className="input text-center" inputMode="decimal" placeholder="0" value={qty[i.id] || ''}
-                            onChange={(e) => setItem(i, Number(e.target.value) || 0)} />
-                          <button className="w-12 h-12 rounded-xl border text-2xl active:scale-95" onClick={() => setItem(i, (Number(qty[i.id]) || 0) + 1)}>+</button>
-                          <button className="px-3 h-12 rounded-xl border text-sm text-emerald-700 active:scale-95" onClick={() => setItem(i, left(i))}>সব</button>
+                          <button className="w-12 h-12 rounded-full bg-slate-100 text-2xl active:scale-95" onClick={() => setItem(i, (Number(qty[i.id]) || 0) - 1)}>−</button>
+                          <input className="input text-center" inputMode="decimal" placeholder="0" value={qty[i.id] || ''} onChange={(e) => setItem(i, Number(e.target.value) || 0)} />
+                          <button className="w-12 h-12 rounded-full bg-brand-100 text-brand-700 text-2xl active:scale-95" onClick={() => setItem(i, (Number(qty[i.id]) || 0) + 1)}>+</button>
+                          <button className="px-4 h-12 rounded-full bg-brand-50 text-sm font-semibold text-brand-700 active:scale-95" onClick={() => setItem(i, left(i))}>সব</button>
                         </div>
                       </div>
                     ))}
@@ -133,43 +140,38 @@ export default function Returns() {
                       </div>
                     )}
 
-                    {refund > 0 && (
-                      <div className="flex gap-2">
-                        <button onClick={() => setMethod('CASH')} className={`chip flex-1 ${method === 'CASH' ? 'chip-on' : ''}`}>💵 নগদ দিলাম</button>
-                        <button onClick={() => setMethod('BKASH')} className={`chip flex-1 ${method === 'BKASH' ? 'chip-on' : ''}`}>📱 বিকাশে দিলাম</button>
-                      </div>
-                    )}
+                    {refund > 0 && <Seg items={[['CASH', '💵 নগদ দিলাম'], ['BKASH', '📱 বিকাশে দিলাম']]} value={method} onChange={setMethod} />}
 
-                    <input className="input" placeholder="কারণ (ঐচ্ছিক) — যেমন: ভুল ওষুধ" value={note} onChange={(e) => setNote(e.target.value)} />
+                    <input className="input" placeholder="কারণ (না লিখলেও চলবে) — যেমন: ভুল পণ্য" value={note} onChange={(e) => setNote(e.target.value)} />
                     <button className="btn" disabled={busy || total <= 0} onClick={submit}>{busy ? 'অপেক্ষা করুন...' : `↩️ ${taka(total)} ফেরত নিন`}</button>
                   </div>
                 )}
               </div>
             ))}
-            {shown.length === 0 && <div className="text-gray-400 text-center py-6">ফেরত দেওয়ার মতো বিক্রি নেই</div>}
+            {shown.length === 0 && <div className="text-slate-400 text-center py-6"><div className="text-4xl mb-1">🧾</div>ফেরত নেওয়ার মতো বিক্রি নেই</div>}
           </div>
         </>
       )}
 
       {tab === 'list' && (
-        <div className="space-y-2">
+        <div className="space-y-2 stagger">
           {hist.map((r) => (
             <div key={r.id} className="card space-y-1">
               <div className="flex justify-between gap-2">
-                <div className="font-semibold truncate">{r.customerName || 'নগদ কাস্টমার'}</div>
+                <div className="font-semibold text-slate-800 truncate">{r.customerName || 'নগদ কাস্টমার'}</div>
                 <div className="font-bold text-rose-600 shrink-0">{taka(r.total)}</div>
               </div>
-              <div className="text-sm text-gray-500">{dateOf(r.createdAt)} • {timeOf(r.createdAt)}</div>
+              <div className="text-sm text-slate-500">{dateOf(r.createdAt)} • {timeOf(r.createdAt)}</div>
               <div className="text-sm">{r.items.map((i: any) => `${i.name} × ${i.qty} ${unitOf(i.unit)}`.trim()).join(', ')}</div>
-              <div className="text-sm text-gray-500">
+              <div className="text-sm text-slate-500">
                 {r.dueAdjusted > 0 && <>বাকি কমেছে {taka(r.dueAdjusted)}</>}
                 {r.dueAdjusted > 0 && r.refund > 0 && ' • '}
                 {r.refund > 0 && <>{r.refundMethod === 'BKASH' ? 'বিকাশে' : 'নগদ'} ফেরত {taka(r.refund)}</>}
               </div>
-              {r.note && <div className="text-sm text-gray-500">📝 {r.note}</div>}
+              {r.note && <div className="text-sm text-slate-500">📝 {r.note}</div>}
             </div>
           ))}
-          {hist.length === 0 && <div className="text-gray-400 text-center py-6">কোনো ফেরত নেই</div>}
+          {hist.length === 0 && <div className="text-slate-400 text-center py-6"><div className="text-4xl mb-1">📋</div>কোনো ফেরত নেই</div>}
         </div>
       )}
     </AppShell>

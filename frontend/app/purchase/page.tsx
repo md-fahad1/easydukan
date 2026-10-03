@@ -5,7 +5,7 @@ import AppShell from '@/components/AppShell';
 import { gql, taka } from '@/lib/api';
 
 type Line = { productId: string; name: string; qty: number; cost: number };
-const PAY: [string, string, string][] = [['FULL', 'পুরো টাকা', '💵'], ['PART', 'কিছু টাকা', '➗'], ['DUE', 'বাকিতে', '📕']];
+const PAY: [string, string, string][] = [['FULL', 'পুরো টাকা দিয়েছি', '💵'], ['PART', 'কিছু টাকা দিয়েছি', '➗'], ['DUE', 'বাকিতে এনেছি', '📕']];
 
 export default function Purchase() {
   const router = useRouter();
@@ -31,9 +31,9 @@ export default function Purchase() {
 
   const submit = async () => {
     setErr('');
-    if (total <= 0) return setErr('মালের মোট টাকা দিন');
+    if (total <= 0) return setErr('মালের মোট টাকা লিখুন');
     const p = pay === 'FULL' ? total : pay === 'DUE' ? 0 : Number(paid) || 0;
-    if (p < total && !supplierId) return setErr('বাকির জন্য মালদাতা বেছে নিন');
+    if (p < total && !supplierId) return setErr('বাকির জন্য কোথা থেকে এনেছেন (মালদাতা) বেছে নিন');
     setBusy(true);
     try {
       const input: any = { supplierId: supplierId || null, paid: p };
@@ -47,20 +47,20 @@ export default function Purchase() {
 
   return (
     <AppShell>
-      <h1 className="text-2xl font-bold text-slate-800">📦 মাল কেনা</h1>
+      <h1 className="text-2xl font-bold text-slate-800">📦 মাল কিনেছি</h1>
 
       <div className="card space-y-4">
         <div>
-          <label className="label">🚚 কোথা থেকে?</label>
+          <label className="label">🚚 কোথা থেকে এনেছেন?</label>
           <select className="input" value={supplierId} onChange={(e) => setSupplierId(e.target.value)}>
             <option value="">— মালদাতা বেছে নিন —</option>
             {suppliers.map((s) => <option key={s.id} value={s.id}>{s.name} (দিতে হবে {taka(s.balance)})</option>)}
           </select>
         </div>
         <div>
-          <label className="label">📦 পণ্য (স্টকে যোগ হবে)</label>
+          <label className="label">📦 কোন পণ্য? (স্টকে যোগ হবে)</label>
           <select className="input" value="" onChange={(e) => addLine(e.target.value)}>
-            <option value="">+ পণ্য যোগ করুন</option>
+            <option value="">+ পণ্য বেছে নিন</option>
             {products.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
           </select>
         </div>
@@ -73,10 +73,10 @@ export default function Purchase() {
             <button onClick={() => remove(l.productId)} className="w-8 h-8 rounded-full bg-rose-50 text-rose-500 active:scale-90 transition" aria-label="বাদ দিন">✕</button>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <div><label className="label">পরিমাণ</label><input className="input" inputMode="decimal" value={l.qty} onChange={(e) => upd(l.productId, 'qty', Number(e.target.value))} /></div>
+            <div><label className="label">কতটা</label><input className="input" inputMode="decimal" value={l.qty} onChange={(e) => upd(l.productId, 'qty', Number(e.target.value))} /></div>
             <div><label className="label">কেনা দাম</label><input className="input" inputMode="decimal" value={l.cost} onChange={(e) => upd(l.productId, 'cost', Number(e.target.value))} /></div>
           </div>
-          <div className="text-right text-sm text-slate-500">লাইন মোট: <b className="text-slate-800">{taka(l.qty * l.cost)}</b></div>
+          <div className="text-right text-sm text-slate-500">এটার মোট: <b className="text-slate-800">{taka(l.qty * l.cost)}</b></div>
         </div>
       ))}
 
@@ -84,20 +84,24 @@ export default function Purchase() {
         <div className="card">
           <label className="label">অথবা শুধু মোট টাকা লিখুন</label>
           <div className="relative">
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-bold text-emerald-600">৳</span>
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-bold text-brand-600">৳</span>
             <input className="input !pl-11 text-2xl" inputMode="decimal" placeholder="12500" value={manual} onChange={(e) => setManual(e.target.value)} />
           </div>
         </div>
       )}
 
-      <div className="rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-4 py-3 flex justify-between items-center shadow-glow">
+      <div className="rounded-3xl bg-ink text-white px-5 py-4 flex justify-between items-center">
         <span>মোট</span><span className="text-2xl font-bold">{taka(total)}</span>
       </div>
 
       <div>
-        <label className="label">পেমেন্ট</label>
-        <div className="flex flex-wrap gap-2">
-          {PAY.map(([k, v, ic]) => <button key={k} onClick={() => setPay(k)} className={`chip ${pay === k ? 'chip-on' : ''}`}>{ic} {v}</button>)}
+        <label className="label">টাকা কীভাবে দিয়েছেন?</label>
+        <div className="grid grid-cols-1 gap-2">
+          {PAY.map(([k, v, ic]) => (
+            <button key={k} onClick={() => setPay(k)} className={`rounded-2xl px-4 py-3 text-left font-semibold flex items-center gap-3 transition active:scale-95 ${pay === k ? 'bg-ink text-white' : 'bg-white text-slate-600 shadow-soft'}`}>
+              <span className="text-xl">{ic}</span>{v}
+            </button>
+          ))}
         </div>
       </div>
       {pay === 'PART' && (
@@ -106,9 +110,9 @@ export default function Purchase() {
           {total > 0 && <div className="badge bg-amber-100 text-amber-700 mt-2">বাকি থাকবে: {taka(total - (Number(paid) || 0))}</div>}
         </div>
       )}
-      {err && <div className="animate-pop rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 px-4 py-3 text-center">⚠️ {err}</div>}
+      {err && <div className="animate-pop rounded-2xl bg-rose-50 text-rose-700 px-4 py-3 text-center">⚠️ {err}</div>}
       <button className="btn" disabled={busy} onClick={submit}>
-        {busy ? <span className="inline-block w-6 h-6 align-middle rounded-full border-4 border-white/40 border-t-white animate-spin" /> : 'মাল কেনা যোগ করুন'}
+        {busy ? <span className="inline-block w-6 h-6 align-middle rounded-full border-4 border-white/40 border-t-white animate-spin" /> : '✔ মাল কেনা লিখে রাখুন'}
       </button>
     </AppShell>
   );

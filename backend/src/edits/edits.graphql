@@ -5,6 +5,7 @@ type EditableSaleItem {
   unit: String
   qty: Float!
   price: Float!
+  serials: [String!]!
 }
 
 type EditableSale {
@@ -30,6 +31,7 @@ type EditablePurchaseItem {
   cost: Float!
   batchNo: String
   expiry: String
+  serials: [String!]!
 }
 
 type EditablePurchase {
@@ -55,4 +57,6 @@ type Mutation {
   editPharmacySale(id: ID!, input: PharmaSaleInput!): Sale!
   editPurchase(id: ID!, input: PurchaseInput!): Purchase!
   editPharmacyPurchase(id: ID!, input: PharmaPurchaseInput!): Purchase!
+  editGadgetSale(id: ID!, input: GadgetSaleInput!): Sale!
+  editGadgetPurchase(id: ID!, input: GadgetPurchaseInput!): Purchase!
 }

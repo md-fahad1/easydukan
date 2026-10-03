@@ -9,42 +9,41 @@
 @keyframes slide-up { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 @keyframes shimmer { 100% { transform: translateX(100%); } }
 @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
-@keyframes ring { 0% { box-shadow: 0 0 0 0 rgba(16,185,129,.45); } 100% { box-shadow: 0 0 0 16px rgba(16,185,129,0); } }
+@keyframes ring { 0% { box-shadow: 0 0 0 0 rgba(24,169,183,.45); } 100% { box-shadow: 0 0 0 16px rgba(24,169,183,0); } }
 
 @layer base {
   html { -webkit-tap-highlight-color: transparent; }
   body {
-    @apply text-slate-800 antialiased min-h-screen;
-    background: linear-gradient(180deg, #ecfdf5 0%, #f8fafc 280px);
-    background-attachment: fixed;
+    @apply text-slate-800 antialiased min-h-screen bg-canvas;
   }
   input, select, textarea, button { font-family: inherit; }
-  ::selection { background: #a7f3d0; }
+  ::selection { background: #A0E1E7; }
 }
 
 @layer components {
   /* কার্ড */
-  .card { @apply bg-white rounded-3xl p-4 border border-slate-100 shadow-soft; }
+  .card { @apply bg-white rounded-3xl p-4 shadow-soft; }
   a.card, button.card { @apply transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg active:scale-[.98]; }
 
   /* বাটন */
-  .btn { @apply block w-full rounded-2xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-semibold py-3.5 text-lg shadow-glow transition-all duration-200 hover:brightness-105 active:scale-95 disabled:opacity-50 disabled:pointer-events-none; }
-  .btn-outline { @apply w-full rounded-2xl border-2 border-emerald-500 text-emerald-700 font-semibold py-3 text-base bg-white transition-all duration-200 hover:bg-emerald-50 active:scale-95 disabled:opacity-50 disabled:pointer-events-none; }
-  .btn-red { @apply block w-full rounded-2xl bg-gradient-to-r from-rose-500 to-rose-600 text-white font-semibold py-3.5 text-lg shadow-glow-red transition-all duration-200 hover:brightness-105 active:scale-95 disabled:opacity-50 disabled:pointer-events-none; }
+  .btn { @apply block w-full rounded-full bg-gradient-to-r from-brand-500 to-brand-600 text-white font-semibold py-3.5 text-lg shadow-glow transition-all duration-200 hover:brightness-105 active:scale-95 disabled:opacity-50 disabled:pointer-events-none; }
+  .btn-dark { @apply block w-full rounded-full bg-ink text-white font-semibold py-3.5 text-lg transition-all duration-200 active:scale-95 disabled:opacity-50 disabled:pointer-events-none; }
+  .btn-outline { @apply w-full rounded-full border-2 border-brand-500 text-brand-700 font-semibold py-3 text-base bg-white transition-all duration-200 hover:bg-brand-50 active:scale-95 disabled:opacity-50 disabled:pointer-events-none; }
+  .btn-red { @apply block w-full rounded-full bg-gradient-to-r from-rose-500 to-rose-600 text-white font-semibold py-3.5 text-lg shadow-glow-red transition-all duration-200 hover:brightness-105 active:scale-95 disabled:opacity-50 disabled:pointer-events-none; }
 
   /* ইনপুট */
-  .input { @apply w-full rounded-2xl border-2 border-slate-200 bg-white px-4 py-3 text-lg placeholder:text-slate-400 transition-all duration-200 focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100; }
+  .input { @apply w-full rounded-2xl border-2 border-transparent bg-slate-100 px-4 py-3 text-lg placeholder:text-slate-400 transition-all duration-200 focus:outline-none focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-100; }
   .label { @apply block text-sm font-semibold text-slate-600 mb-1.5; }
 
   /* চিপ */
-  .chip { @apply px-4 py-2 rounded-full border-2 border-slate-200 text-base bg-white text-slate-600 transition-all duration-200 active:scale-95; }
-  .chip-on { @apply bg-gradient-to-r from-emerald-500 to-emerald-600 text-white border-transparent shadow-glow; }
+  .chip { @apply px-4 py-2 rounded-full bg-white text-base text-slate-600 shadow-soft transition-all duration-200 active:scale-95; }
+  .chip-on { @apply bg-ink text-white; }
 
   /* ছোট ব্যাজ */
   .badge { @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold; }
 
   /* লোডিং স্কেলেটন */
-  .skeleton { @apply relative overflow-hidden rounded-2xl bg-slate-200/70; }
+  .skeleton { @apply relative overflow-hidden rounded-3xl bg-slate-200/70; }
   .skeleton::after { content: ''; @apply absolute inset-0 bg-gradient-to-r from-transparent via-white/70 to-transparent; transform: translateX(-100%); animation: shimmer 1.4s infinite; }
 
   /* একটার পর একটা এনিমেশন (list/card এ) */

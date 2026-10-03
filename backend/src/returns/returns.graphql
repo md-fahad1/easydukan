@@ -6,6 +6,7 @@ type ReturnableItem {
   qty: Float!
   returnedQty: Float!
   price: Float!
+  serials: [String!]!
 }
 
 type ReturnableSale {
@@ -41,6 +42,7 @@ type SaleReturnInfo {
 input ReturnItemInput {
   saleItemId: ID!
   qty: Float!
+  serials: [String!]
 }
 
 input SaleReturnInput {

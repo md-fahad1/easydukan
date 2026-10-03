@@ -55,6 +55,13 @@ type Product {
   form: String!
   piecesPerStrip: Int!
   stripsPerBox: Int!
+  brand: String
+  model: String
+  category: String
+  color: String
+  variant: String
+  warrantyMonths: Int!
+  trackSerial: Boolean!
 }
 
 type SaleItem {

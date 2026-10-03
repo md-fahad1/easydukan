@@ -5,7 +5,7 @@ import { gql } from '@/lib/api';
 
 const ROLE: Record<string, string> = { OWNER: 'মালিক', MANAGER: 'ম্যানেজার', EMPLOYEE: 'কর্মচারী (শুধু বিক্রি)' };
 const ROLE_ICON: Record<string, string> = { OWNER: '👑', MANAGER: '🧑‍💼', EMPLOYEE: '👷' };
-const ROLE_TONE: Record<string, string> = { OWNER: 'bg-amber-100 text-amber-700', MANAGER: 'bg-sky-100 text-sky-700', EMPLOYEE: 'bg-emerald-100 text-emerald-700' };
+const ROLE_TONE: Record<string, string> = { OWNER: 'bg-amber-100 text-amber-700', MANAGER: 'bg-sky-100 text-sky-700', EMPLOYEE: 'bg-brand-100 text-brand-700' };
 
 export default function Team() {
   const [list, setList] = useState<any[]>([]);
@@ -18,6 +18,7 @@ export default function Team() {
 
   const add = async () => {
     setErr('');
+    if (!f.name.trim() || !f.phone.trim() || !f.password) return setErr('নাম, মোবাইল ও পাসওয়ার্ড দিন');
     try { await gql(`mutation($i:AddUserInput!){ addUser(input:$i){ id } }`, { i: f }); setF({ name: '', phone: '', password: '', role: 'EMPLOYEE' }); setShow(false); load(); }
     catch (e: any) { setErr(e.message); }
   };
@@ -26,18 +27,24 @@ export default function Team() {
     <AppShell>
       <h1 className="text-2xl font-bold text-slate-800">👥 কর্মচারী</h1>
 
-      <button className="btn-outline" onClick={() => setShow(!show)}>{show ? '✕ বন্ধ করুন' : '+ নতুন কর্মচারী'}</button>
+      <button className="btn-dark" onClick={() => setShow(!show)}>{show ? '✕ বন্ধ করুন' : '+ নতুন কর্মচারী যোগ করুন'}</button>
       {show && (
         <div className="card animate-fade-up space-y-3">
           <input className="input" placeholder="নাম" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} />
-          <input className="input" inputMode="numeric" placeholder="মোবাইল (লগইনের জন্য)" value={f.phone} onChange={(e) => setF({ ...f, phone: e.target.value })} />
+          <input className="input" inputMode="numeric" placeholder="মোবাইল নম্বর (এটা দিয়েই ঢুকবে)" value={f.phone} onChange={(e) => setF({ ...f, phone: e.target.value })} />
           <input className="input" type="password" placeholder="পাসওয়ার্ড" value={f.password} onChange={(e) => setF({ ...f, password: e.target.value })} />
-          <div className="flex flex-wrap gap-2">{['EMPLOYEE', 'MANAGER'].map((r) => <button key={r} onClick={() => setF({ ...f, role: r })} className={`chip ${f.role === r ? 'chip-on' : ''}`}>{ROLE_ICON[r]} {ROLE[r]}</button>)}</div>
-          {err && <div className="animate-pop rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 px-4 py-3 text-center">⚠️ {err}</div>}
+          <div className="grid grid-cols-1 gap-2">
+            {['EMPLOYEE', 'MANAGER'].map((r) => (
+              <button key={r} onClick={() => setF({ ...f, role: r })} className={`rounded-2xl px-4 py-3 text-left font-semibold transition active:scale-95 ${f.role === r ? 'bg-ink text-white' : 'bg-slate-100 text-slate-600'}`}>
+                {ROLE_ICON[r]} {ROLE[r]}
+              </button>
+            ))}
+          </div>
+          {err && <div className="animate-pop rounded-2xl bg-rose-50 text-rose-700 px-4 py-3 text-center">⚠️ {err}</div>}
           <button className="btn" onClick={add}>যোগ করুন</button>
         </div>
       )}
-      {!show && err && <div className="animate-pop rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 px-4 py-3 text-center">⚠️ {err}</div>}
+      {!show && err && <div className="animate-pop rounded-2xl bg-rose-50 text-rose-700 px-4 py-3 text-center">⚠️ {err}</div>}
 
       <div className="space-y-2 stagger">
         {!loaded && [0, 1, 2].map((i) => <div key={i} className="skeleton h-20" />)}

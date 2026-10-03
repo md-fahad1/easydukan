@@ -1,0 +1,91 @@
+# একটি আলাদা ইউনিট (IMEI / সিরিয়াল)
+type Unit {
+  id: ID!
+  serial: String!
+  status: String!
+  cost: Float!
+  price: Float
+  productId: ID!
+  productName: String!
+  color: String
+  soldAt: DateTime
+  warrantyEnd: DateTime
+  inWarranty: Boolean!
+  customerName: String
+  customerPhone: String
+}
+
+type GroupRow {
+  key: String!
+  stock: Float!
+  stockValue: Float!
+  sold: Float!
+  revenue: Float!
+  profit: Float!
+}
+
+type Facets {
+  brands: [String!]!
+  categories: [String!]!
+  colors: [String!]!
+  variants: [String!]!
+}
+
+input GadgetInput {
+  name: String
+  brand: String
+  model: String
+  category: String
+  color: String
+  variant: String
+  barcode: String
+  warrantyMonths: Int
+  trackSerial: Boolean
+  buyPrice: Float
+  sellPrice: Float
+  minQty: Float
+  openQty: Float
+  openSerials: [String!]
+}
+
+input GadgetSaleItemInput {
+  productId: ID!
+  qty: Float!
+  price: Float
+  serials: [String!]
+}
+
+input GadgetSaleInput {
+  items: [GadgetSaleItemInput!]!
+  cashAmount: Float
+  bkashAmount: Float
+  dueAmount: Float
+  customerId: ID
+  note: String
+}
+
+input GadgetPurchaseItemInput {
+  productId: ID!
+  qty: Float!
+  cost: Float!
+  serials: [String!]
+}
+
+input GadgetPurchaseInput {
+  supplierId: ID
+  items: [GadgetPurchaseItemInput!]!
+  paid: Float
+}
+
+type Query {
+  availableUnits(productId: ID!): [Unit!]!
+  searchUnits(query: String!): [Unit!]!
+  gadgetBreakdown(by: String!, days: Int!): [GroupRow!]!
+  gadgetFacets: Facets!
+}
+
+type Mutation {
+  saveGadget(id: ID, input: GadgetInput!): Product!
+  gadgetSale(input: GadgetSaleInput!): Sale!
+  gadgetPurchase(input: GadgetPurchaseInput!): Purchase!
+}

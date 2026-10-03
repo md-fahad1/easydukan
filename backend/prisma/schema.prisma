@@ -84,11 +84,21 @@ model Product {
   form           String         @default("GENERAL")
   piecesPerStrip Int            @default(1)
   stripsPerBox   Int            @default(1)
+   brand          String?
+  model          String?
+  category       String?
+  color          String?
+  variant        String?
+  warrantyMonths Int            @default(0)
+  trackSerial    Boolean        @default(false)
   createdAt      DateTime       @default(now())
   batches        ProductBatch[]
+  units          ProductUnit[]
 
   @@index([tenantId])
   @@index([tenantId, barcode])
+  @@index([tenantId, brand])
+  @@index([tenantId, category])
 }
 
 model Sale {
@@ -250,4 +260,32 @@ model MedicineCatalog {
 
   @@index([brand])
   @@index([genericName])
+}
+
+enum UnitStatus {
+  IN_STOCK
+  SOLD
+}
+
+// গ্যাজেটের প্রতিটি আলাদা ইউনিট (IMEI / সিরিয়াল নম্বর)
+model ProductUnit {
+  id          String     @id @default(uuid())
+  tenantId    String
+  productId   String
+  serial      String
+  status      UnitStatus @default(IN_STOCK)
+  cost        Float      @default(0)
+  purchaseId  String?
+  saleId      String?
+  saleItemId  String?
+  soldAt      DateTime?
+  warrantyEnd DateTime?
+  createdAt   DateTime   @default(now())
+  product     Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, serial])
+  @@index([tenantId, productId, status])
+  @@index([saleId])
+  @@index([saleItemId])
+  @@index([purchaseId])
 }

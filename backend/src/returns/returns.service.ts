@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { range } from '../shop/dates';
+import { cleanSerials } from '../gadget/gadget.service';
 
 const DAY = 86400000;
 const n = (v: any) => Number(v) || 0;
@@ -38,6 +39,11 @@ export class ReturnsService {
       take: 100,
     });
     const done = await this.returnedMap(sales.map((s) => s.id));
+    // গ্যাজেট: কোন আইটেমে কোন IMEI/সিরিয়াল বিক্রি হয়েছে (ফেরতের সময় বেছে নিতে)
+    const units = await this.db.productUnit.findMany({
+      where: { tenantId: t, saleId: { in: sales.map((s) => s.id) }, status: 'SOLD' },
+      select: { saleItemId: true, serial: true },
+    });
     return sales.map((s) => ({
       id: s.id,
       total: s.total,
@@ -49,6 +55,7 @@ export class ReturnsService {
       items: s.items.map((it) => ({
         id: it.id, productId: it.productId, name: it.name, unit: it.unit,
         qty: it.qty, returnedQty: done[it.id] || 0, price: it.price,
+        serials: units.filter((u) => u.saleItemId === it.id).map((u) => u.serial),
       })),
     }));
   }
@@ -95,7 +102,7 @@ export class ReturnsService {
       const perUnit = it.pieces > 0 ? it.pieces / it.qty : 1; // ১ unit = কত পিস
       lines.push({
         saleItemId: it.id, productId: it.productId, name: it.name, unit: it.unit,
-        qty, pieces: qty * perUnit, price: it.price, cost: it.cost,
+        qty, pieces: qty * perUnit, price: it.price, cost: it.cost, serials: cleanSerials(x.serials),
       });
     }
     if (!lines.length) throw new BadRequestException('ফেরতের পরিমাণ দিন');
@@ -112,7 +119,7 @@ export class ReturnsService {
         data: {
           tenantId: t, saleId: sale.id, total, cost, dueAdjusted, refund, refundMethod: method,
           note: i.note || null, createdBy: userId,
-          items: { create: lines },
+          items: { create: lines.map(({ serials, ...row }) => row) },
         },
       });
 
@@ -135,6 +142,16 @@ export class ReturnsService {
               data: { tenantId: t, productId: p.id, batchNo: 'RETURN', expiry: null, qty: l.pieces, cost: r4(l.cost / (l.pieces / l.qty)) },
             });
         }
+      }
+
+      // গ্যাজেট: ফেরত আসা IMEI/সিরিয়াল আবার স্টকে ফিরবে
+      for (const l of lines) {
+        const linked = await tx.productUnit.count({ where: { tenantId: t, saleItemId: l.saleItemId, status: 'SOLD' } });
+        if (!linked) continue;
+        if (l.serials.length !== l.qty) throw new BadRequestException(`${l.name}: ফেরত আসা ${l.qty}টির সিরিয়াল/IMEI বেছে নিন`);
+        const units = await tx.productUnit.findMany({ where: { tenantId: t, saleItemId: l.saleItemId, status: 'SOLD', serial: { in: l.serials } } });
+        if (units.length !== l.serials.length || new Set(l.serials).size !== l.serials.length) throw new BadRequestException(`${l.name}: সিরিয়াল/IMEI এই বিক্রির সাথে মেলেনি`);
+        await tx.productUnit.updateMany({ where: { id: { in: units.map((u) => u.id) } }, data: { status: 'IN_STOCK', saleId: null, saleItemId: null, soldAt: null, warrantyEnd: null } });
       }
 
       if (dueAdjusted > 0 && sale.customerId)
