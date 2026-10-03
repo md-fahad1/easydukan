@@ -9,6 +9,7 @@ const TYPES: { name: string; icon: string; sub: string; tone: string }[] = [
   { name: 'মনোহারি', icon: '🧴', sub: 'সাবান, প্রসাধনী, ঘরের জিনিস', tone: 'bg-sky-50' },
   { name: 'কনফেকশনারি', icon: '🍬', sub: 'বিস্কুট, চকলেট, ঠান্ডা পানীয়', tone: 'bg-amber-50' },
   { name: 'ফার্মেসি', icon: '💊', sub: 'ওষুধ, ব্যাচ ও মেয়াদ হিসাব', tone: 'bg-rose-50' },
+  { name: 'গ্যাজেট ', icon: '📱', sub: 'মোবাইল, গ্যাজেট, IMEI ওয়ারেন্টি', tone: 'bg-emerald-50' },
   { name: 'অন্যান্য', icon: '🏬', sub: 'অন্য যেকোনো দোকান', tone: 'bg-violet-50' },
 ];
 

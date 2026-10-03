@@ -58,3 +58,22 @@ export function fmtStock(pieces: number, p: any) {
   if (rest > 0 || parts.length === 0) parts.push(`${rest} ${pieceLabel(p)}`);
   return parts.join(' ');
 }
+
+
+// ---------- গ্যাজেট helpers ----------
+export const GADGET = 'গ্যাজেট';
+export type Kind = 'shop' | 'pharma' | 'gadget';
+export const shopKind = (): Kind => {
+  if (typeof window === 'undefined') return 'shop';
+  const t = localStorage.getItem('ed_type');
+  return t === 'ফার্মেসি' ? 'pharma' : t === GADGET ? 'gadget' : 'shop';
+};
+// লেখা থেকে IMEI/সিরিয়াল আলাদা করা: প্রতি লাইনে (বা কমা দিয়ে) একটি। ফাঁকা জায়গা বাদ, বড় হাতের অক্ষর, একই নম্বর একবারই।
+export const parseSerials = (t: string) => [...new Set(t.split(/[\n,;]+/).map((s) => s.replace(/\s+/g, '').toUpperCase()).filter(Boolean))];
+export const fullDate = (d: string) => new Date(d).toLocaleDateString('bn-BD', { day: 'numeric', month: 'short', year: 'numeric' });
+// নাম না দিলে ব্র্যান্ড + মডেল (রং, ভ্যারিয়েন্ট) থেকে নাম — ব্যাকএন্ডের মতোই
+export const gadgetName = (f: any) => {
+  const base = [f.brand, f.model].map((s) => String(s || '').trim()).filter(Boolean).join(' ');
+  const extra = [f.color, f.variant].map((s) => String(s || '').trim()).filter(Boolean).join(', ');
+  return [base, extra ? `(${extra})` : ''].filter(Boolean).join(' ');
+};
